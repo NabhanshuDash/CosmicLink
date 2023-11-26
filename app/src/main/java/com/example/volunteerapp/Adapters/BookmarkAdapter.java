@@ -8,11 +8,14 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.volunteerapp.Activities.CustomViews.BookmarkPostDetails;
+import com.example.volunteerapp.Activities.VolTaskActivity;
+import com.example.volunteerapp.Chat.Activity.chatwindo;
 import com.example.volunteerapp.Models.modelPost;
 import com.example.volunteerapp.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,6 +55,7 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.MyHold
         String pTitle = bookmarkedList.get(position).getpTitle();
         String pImage = bookmarkedList.get(position).getpImage();
         String pTags = bookmarkedList.get(position).getpTags();
+        String uId = bookmarkedList.get(position).getUid();
 
         //To set data
 
@@ -72,23 +76,46 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.MyHold
 
         // Set OnClickListener to open the profile page
         holder.itemView.setOnClickListener(new View.OnClickListener() {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            String myuId = user.getUid();
             @Override
             public void onClick(View view) {
                 // Handle the click event, open the profile page
-                Context context = view.getContext();
-                Intent intent = new Intent(context, BookmarkPostDetails.class);
-                intent.putExtra("pId", post.getpId());
-                context.startActivity(intent);
+                if(isBookmarkButtonEnabled) {
+                    Context context = view.getContext();
+                    Intent intent = new Intent(context, BookmarkPostDetails.class);
+                    intent.putExtra("pId", post.getpId());
+                    context.startActivity(intent);
+                }
+                else {
+                    Context context = view.getContext();
+                    Intent intent = new Intent(context, VolTaskActivity.class);
+                    intent.putExtra("pId", post.getpId());
+                    intent.putExtra("uId",myuId);
+                    intent.putExtra("workhours",post.getWorkhours());
+                    context.startActivity(intent);
+                }
             }
         });
 
         if (isBookmarkButtonEnabled) {
             holder.bookmarkedButton.setVisibility(View.VISIBLE);
+            holder.chatbutton.setVisibility(View.GONE);
             holder.status.setText("Click to View Post Info ");
         } else {
             holder.bookmarkedButton.setVisibility(View.GONE);
+            holder.chatbutton.setVisibility(View.VISIBLE);
             holder.status.setText("Click to View Tasks ");
         }
+
+        holder.chatbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent  = new Intent(context.getApplicationContext(), chatwindo.class);
+                intent.putExtra("uid",uId);
+                context.startActivity(intent);
+            }
+        });
 
         holder.bookmarkedButton.setOnClickListener(new View.OnClickListener() {
 
@@ -134,7 +161,7 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.MyHold
     public class MyHolder extends RecyclerView.ViewHolder{
         ImageView postImg;
         TextView title,status;
-        ImageButton bookmarkedButton;
+        ImageButton bookmarkedButton,chatbutton;
 
 
         public MyHolder(@NonNull View itemView) {
@@ -144,6 +171,7 @@ public class BookmarkAdapter extends RecyclerView.Adapter<BookmarkAdapter.MyHold
             title = itemView.findViewById(R.id.bookmarkedText);
             bookmarkedButton = itemView.findViewById(R.id.bookmarkedBtn);
             status = itemView.findViewById(R.id.below_Text);
+            chatbutton = itemView.findViewById(R.id.chatBtn);
         }
     }
 
